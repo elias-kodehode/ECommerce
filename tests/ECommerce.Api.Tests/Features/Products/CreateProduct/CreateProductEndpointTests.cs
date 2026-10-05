@@ -1,19 +1,10 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
-using ECommerce.Api.Common.Endpoints;
-using ECommerce.Api.Common.Messaging;
-using ECommerce.Api.Data;
 using ECommerce.Api.Domain;
 using ECommerce.Api.Features.Products.CreateProduct;
-using FluentValidation;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.TestHost;
+using ECommerce.Api.Tests.Common;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 namespace ECommerce.Api.Tests.Features.Products.CreateProduct;
 
@@ -22,7 +13,8 @@ public sealed class CreateProductEndpointTests
     [Fact]
     public async Task Post_WithValidRequest_ReturnsCreatedAndPersistsProduct()
     {
-        await using TestApplication application = await CreateApplicationAsync();
+        await using TestApplication application = await TestApplication.CreateAsync(
+            TestContext.Current.CancellationToken);
         CreateProductRequest request = new(
             Name: "  Wireless Mouse  ",
             Sku: "  mouse-001  ",
@@ -45,20 +37,22 @@ public sealed class CreateProductEndpointTests
         Assert.True(id > 0);
         Assert.Equal($"/api/products/{id}", response.Headers.Location?.ToString());
 
-        await using AsyncServiceScope scope = application.Services.CreateAsyncScope();
-        AppDbContext db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        Product product = await db.Products.SingleAsync(TestContext.Current.CancellationToken);
+        await application.ExecuteDbContextAsync(async db =>
+        {
+            Product product = await db.Products.SingleAsync(TestContext.Current.CancellationToken);
 
-        Assert.Equal(id, product.Id);
-        Assert.Equal("Wireless Mouse", product.Name);
-        Assert.Equal("MOUSE-001", product.Sku);
-        Assert.Equal("Example Brand", product.Brand);
+            Assert.Equal(id, product.Id);
+            Assert.Equal("Wireless Mouse", product.Name);
+            Assert.Equal("MOUSE-001", product.Sku);
+            Assert.Equal("Example Brand", product.Brand);
+        });
     }
 
     [Fact]
     public async Task Post_WithInvalidRequest_ReturnsValidationProblem()
     {
-        await using TestApplication application = await CreateApplicationAsync();
+        await using TestApplication application = await TestApplication.CreateAsync(
+            TestContext.Current.CancellationToken);
         CreateProductRequest request = new(
             Name: string.Empty,
             Sku: string.Empty,
@@ -96,11 +90,11 @@ public sealed class CreateProductEndpointTests
     [Fact]
     public async Task Post_WithExistingSku_ReturnsConflictProblem()
     {
-        await using TestApplication application = await CreateApplicationAsync();
+        await using TestApplication application = await TestApplication.CreateAsync(
+            TestContext.Current.CancellationToken);
 
-        await using (AsyncServiceScope scope = application.Services.CreateAsyncScope())
+        await application.ExecuteDbContextAsync(async db =>
         {
-            AppDbContext db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             db.Products.Add(Product.Create(
                 name: "Existing Mouse",
                 sku: "MOUSE-001",
@@ -108,7 +102,7 @@ public sealed class CreateProductEndpointTests
                 price: 39.99m,
                 stockQuantity: 5));
             await db.SaveChangesAsync(TestContext.Current.CancellationToken);
-        }
+        });
 
         CreateProductRequest request = new(
             Name: "Another Mouse",
@@ -135,37 +129,4 @@ public sealed class CreateProductEndpointTests
             body.RootElement.GetProperty("errors")[0].GetProperty("code").GetString());
     }
 
-    private static async Task<TestApplication> CreateApplicationAsync()
-    {
-        WebApplicationBuilder builder = WebApplication.CreateBuilder();
-        builder.WebHost.UseTestServer();
-        builder.Logging.ClearProviders();
-        InMemoryDatabaseRoot databaseRoot = new();
-        string databaseName = $"create-product-endpoint-tests-{Guid.NewGuid()}";
-        builder.Services.AddDbContext<AppDbContext>(options =>
-            options.UseInMemoryDatabase(
-                databaseName,
-                databaseRoot));
-        builder.Services.AddCqrs(typeof(CreateProductHandler).Assembly);
-        builder.Services.AddValidatorsFromAssemblyContaining<CreateProductCommandValidator>();
-        builder.Services.AddMemoryCache();
-        WebApplication app = builder.Build();
-        app.MapEndpoints();
-        await app.StartAsync(TestContext.Current.CancellationToken);
-
-        return new TestApplication(app, app.GetTestClient());
-    }
-
-    private sealed class TestApplication(WebApplication app, HttpClient client) : IAsyncDisposable
-    {
-        public HttpClient Client { get; } = client;
-
-        public IServiceProvider Services => app.Services;
-
-        public async ValueTask DisposeAsync()
-        {
-            Client.Dispose();
-            await app.DisposeAsync();
-        }
-    }
 }

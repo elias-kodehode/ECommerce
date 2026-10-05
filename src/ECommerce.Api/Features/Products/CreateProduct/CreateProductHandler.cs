@@ -2,6 +2,7 @@
 using ECommerce.Api.Common.Results;
 using ECommerce.Api.Data;
 using ECommerce.Api.Domain;
+using ECommerce.Api.Features.Products.Common;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
@@ -56,7 +57,13 @@ public sealed class CreateProductHandler(
 				"A product with this SKU already exists."));
 		}
 
-		cache.Set(CACHE_KEY+product.Id, product);
+		cache.Set(CACHE_KEY + product.Id, new ProductResponse(
+			product.Id,
+			product.Name,
+			product.Sku,
+			product.Brand,
+			product.Price,
+			product.StockQuantity));
 		logger.LogInformation("Created product with ID: {id}, and cache key {key}", product.Id, CACHE_KEY + product.Id);
 		return Result<int>.Success(product.Id);
 	}

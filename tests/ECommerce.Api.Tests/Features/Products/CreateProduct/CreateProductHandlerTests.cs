@@ -2,6 +2,7 @@ using ECommerce.Api.Common.Results;
 using ECommerce.Api.Data;
 using ECommerce.Api.Domain;
 using ECommerce.Api.Features.Products.CreateProduct;
+using ECommerce.Api.Tests.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
@@ -14,7 +15,7 @@ public sealed class CreateProductHandlerTests
     [Fact]
     public async Task HandleAsync_WithValidCommand_PersistsProductAndReturnsId()
     {
-        await using AppDbContext db = CreateDbContext();
+        await using AppDbContext db = TestDbContextFactory.Create();
         CreateProductHandler handler = CreateHandler(db);
         CreateProductCommand command = new(
             Name: "  Wireless Mouse  ",
@@ -40,7 +41,7 @@ public sealed class CreateProductHandlerTests
     [Fact]
     public async Task HandleAsync_WithInvalidCommand_ReturnsErrorsWithoutPersistingProduct()
     {
-        await using AppDbContext db = CreateDbContext();
+        await using AppDbContext db = TestDbContextFactory.Create();
         CreateProductHandler handler = CreateHandler(db);
         CreateProductCommand command = new(
             Name: string.Empty,
@@ -63,7 +64,7 @@ public sealed class CreateProductHandlerTests
     [Fact]
     public async Task HandleAsync_WithExistingSku_ReturnsConflictWithoutPersistingProduct()
     {
-        await using AppDbContext db = CreateDbContext();
+        await using AppDbContext db = TestDbContextFactory.Create();
         Product existingProduct = Product.Create(
             name: "Existing Mouse",
             sku: "MOUSE-001",
@@ -98,12 +99,4 @@ public sealed class CreateProductHandlerTests
         return new(new CreateProductCommandValidator(),cache, db, logger);
     }
 
-    private static AppDbContext CreateDbContext()
-    {
-        DbContextOptions<AppDbContext> options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseInMemoryDatabase($"create-product-tests-{Guid.NewGuid()}")
-            .Options;
-
-        return new AppDbContext(options);
-    }
 }

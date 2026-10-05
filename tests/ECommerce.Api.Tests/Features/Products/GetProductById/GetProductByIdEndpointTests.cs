@@ -1,19 +1,8 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
-using ECommerce.Api.Common.Endpoints;
-using ECommerce.Api.Common.Messaging;
-using ECommerce.Api.Data;
 using ECommerce.Api.Features.Products.CreateProduct;
-using ECommerce.Api.Features.Products.GetProductById;
 using ECommerce.Api.Tests.Common;
-using FluentValidation;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 namespace ECommerce.Api.Tests.Features.Products.GetProductById;
 
@@ -23,7 +12,8 @@ public class GetProductByIdEndpointTests
     [Fact]
     public async Task Get_NonExistingProduct_Returns_404()
     {
-        await using TestApplication application = await CreateApplicationAsync();
+        await using TestApplication application = await TestApplication.CreateAsync(
+            TestContext.Current.CancellationToken);
 
         HttpResponseMessage response = await application.Client.GetAsync(
             "/api/products/1",
@@ -40,7 +30,8 @@ public class GetProductByIdEndpointTests
     [Fact]
     public async Task Get_Existing_Product_Returns_Found()
     {
-        await using TestApplication application = await CreateApplicationAsync();
+        await using TestApplication application = await TestApplication.CreateAsync(
+            TestContext.Current.CancellationToken);
 
         CreateProductRequest request = new(
             Name: "Wireless Mouse",
@@ -88,37 +79,4 @@ public class GetProductByIdEndpointTests
         decimal Price,
         int StockQuantity
         );
-    private static async Task<TestApplication> CreateApplicationAsync()
-    {
-        WebApplicationBuilder builder = WebApplication.CreateBuilder();
-        builder.WebHost.UseTestServer();
-        builder.Logging.ClearProviders();
-        InMemoryDatabaseRoot databaseRoot = new();
-        string databaseName = $"get-product-by-id-endpoint-tests-{Guid.NewGuid()}";
-        builder.Services.AddDbContext<AppDbContext>(options =>
-            options.UseInMemoryDatabase(
-                databaseName,
-                databaseRoot));
-        builder.Services.AddCqrs(typeof(GetProductByIdHandler).Assembly);
-        builder.Services.AddValidatorsFromAssemblyContaining<CreateProductCommandValidator>();
-        builder.Services.AddMemoryCache();
-        WebApplication app = builder.Build();
-        app.MapEndpoints();
-        await app.StartAsync(TestContext.Current.CancellationToken);
-
-        return new TestApplication(app, app.GetTestClient());
-    }
-
-    private sealed class TestApplication(WebApplication app, HttpClient client) : IAsyncDisposable
-    {
-        public HttpClient Client { get; } = client;
-
-        public IServiceProvider Services => app.Services;
-
-        public async ValueTask DisposeAsync()
-        {
-            Client.Dispose();
-            await app.DisposeAsync();
-        }
-    }
 }
