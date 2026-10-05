@@ -123,10 +123,18 @@ public sealed class CreateProductEndpointTests
             cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.Equal(409, body.RootElement.GetProperty("status").GetInt32());
-        Assert.Equal("A conflict occurred.", body.RootElement.GetProperty("title").GetString());
+
+        Assert.Equal("A conflict occurred.",
+            body.RootElement.GetProperty("title").GetString());
+
+
+        var expectedError = ProductErrors.SkuConflict(request.Sku.Trim());
         Assert.Equal(
-            "Products.Sku.Conflict",
-            body.RootElement.GetProperty("errors")[0].GetProperty("code").GetString());
+            expectedError.Code,
+            body.RootElement
+                .GetProperty("errors")[0]
+                .GetProperty("code")
+                .GetString());
     }
 
 }

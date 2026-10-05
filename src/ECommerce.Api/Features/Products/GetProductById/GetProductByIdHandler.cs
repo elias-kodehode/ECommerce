@@ -14,7 +14,7 @@ public class GetProductByIdHandler(
 {
     public async Task<Result<ProductResponse>> HandleAsync(GetProductByIdQuery query, CancellationToken ct)
     {
-        if(cache.TryGetValue<ProductResponse>($"product-id:{query.Id}", out var result) && result is not null)
+        if(cache.TryGetValue<ProductResponse>(ProductCacheKeys.ById(query.Id), out var result) && result is not null)
         {
             logger.LogInformation("hit cache");
             return Result<ProductResponse>.Success(result);
@@ -34,7 +34,7 @@ public class GetProductByIdHandler(
 
         if(product is not null)
         {
-            cache.Set("product-id:" + product.Id, product);
+            cache.Set(ProductCacheKeys.ById(product.Id), product);
             logger.LogInformation("product was not previously cached and has been cached now");
             return Result<ProductResponse>.Success(product);
         }

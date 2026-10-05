@@ -9,7 +9,8 @@ namespace ECommerce.Api.Features.Products.GetAllProducts;
 
 public sealed class GetAllProductsQueryHandler(
 	IValidator<GetAllProductsQuery> validator,
-	AppDbContext db) : IQueryHandler<GetAllProductsQuery, Result<GetAllProductsResponse>>
+	AppDbContext db) 
+	: IQueryHandler<GetAllProductsQuery, Result<GetAllProductsResponse>>
 {
 	public async Task<Result<GetAllProductsResponse>> HandleAsync(GetAllProductsQuery query, CancellationToken ct)
 	{

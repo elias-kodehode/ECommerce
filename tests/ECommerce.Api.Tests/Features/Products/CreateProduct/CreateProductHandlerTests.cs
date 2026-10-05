@@ -73,9 +73,12 @@ public sealed class CreateProductHandlerTests
             stockQuantity: 5);
 
         db.Products.Add(existingProduct);
-        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        await db.SaveChangesAsync(
+            TestContext.Current.CancellationToken);
 
         CreateProductHandler handler = CreateHandler(db);
+
         CreateProductCommand command = new(
             Name: "Another Mouse",
             Sku: "  mouse-001  ",
@@ -83,15 +86,24 @@ public sealed class CreateProductHandlerTests
             Price: 59.99m,
             StockQuantity: 3);
 
-        Result<int> result = await handler.HandleAsync(command, TestContext.Current.CancellationToken);
+        Result<int> result = await handler.HandleAsync(
+            command,
+            TestContext.Current.CancellationToken);
 
         Assert.True(result.IsFailure);
-        Error error = Assert.Single(result.Errors);
-        Assert.Equal(ErrorType.Conflict, error.Type);
-        Assert.Equal("Products.Sku.Conflict", error.Code);
-        Assert.Equal(1, await db.Products.CountAsync(TestContext.Current.CancellationToken));
-    }
 
+        Error error = Assert.Single(result.Errors);
+        Error expectedError = ProductErrors.SkuConflict(command.Sku.Trim().ToUpperInvariant());
+
+        Assert.Equal(expectedError.Type, error.Type);
+        Assert.Equal(expectedError.Code, error.Code);
+        Assert.Equal(expectedError.Description, error.Description);
+
+        Assert.Equal(
+            1,
+            await db.Products.CountAsync(
+                TestContext.Current.CancellationToken));
+    }
     private static CreateProductHandler CreateHandler(AppDbContext db)
     {
         var cache = new MemoryCache(new MemoryCacheOptions());

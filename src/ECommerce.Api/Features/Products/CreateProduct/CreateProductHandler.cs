@@ -16,7 +16,6 @@ public sealed class CreateProductHandler(
 	AppDbContext db,
 	ILogger<CreateProductHandler> logger) : ICommandHandler<CreateProductCommand, Result<int>>
 {
-	const string CACHE_KEY = "product-id:";
 	public async Task<Result<int>> HandleAsync(CreateProductCommand command, CancellationToken ct)
 	{
 		var validationResult = await validator.ValidateAsync(command, ct);
@@ -32,9 +31,7 @@ public sealed class CreateProductHandler(
 
 		if(await db.Products.AnyAsync(product => product.Sku == normalizedSku, ct))
 		{
-			return Result<int>.Failure(Error.Conflict(
-				"Products.Sku.Conflict",
-				"A product with this SKU already exists."));
+			return Result<int>.Failure(ProductErrors.SkuConflict(normalizedSku));
 		}
 
 		Product product = Product.Create(
@@ -52,19 +49,18 @@ public sealed class CreateProductHandler(
 		}
 		catch(DbUpdateException exception) when(IsUniqueSkuViolation(exception))
 		{
-			return Result<int>.Failure(Error.Conflict(
-				"Products.Sku.Conflict",
-				"A product with this SKU already exists."));
-		}
+            return Result<int>.Failure(ProductErrors.SkuConflict(normalizedSku));
+        }
 
-		cache.Set(CACHE_KEY + product.Id, new ProductResponse(
+		cache.Set(ProductCacheKeys.ById(product.Id), new ProductResponse(
 			product.Id,
 			product.Name,
 			product.Sku,
 			product.Brand,
 			product.Price,
 			product.StockQuantity));
-		logger.LogInformation("Created product with ID: {id}, and cache key {key}", product.Id, CACHE_KEY + product.Id);
+
+		logger.LogInformation("Created product with ID: {id}, and cache key {key}", product.Id, ProductCacheKeys.ById(product.Id));
 		return Result<int>.Success(product.Id);
 	}
 

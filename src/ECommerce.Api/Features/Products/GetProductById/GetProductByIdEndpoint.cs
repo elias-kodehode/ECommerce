@@ -13,11 +13,8 @@ public sealed class GetProductByIdEndpoint : IEndpoint
             IQueryDispatcher dispatcher, 
             CancellationToken ct) => 
         {
-            GetProductByIdQuery query = new(
-                Id
-            );
 
-            var result = await dispatcher.SendAsync(query,ct);
+            var result = await dispatcher.SendAsync(new GetProductByIdQuery(Id), ct);
 
             return result.Match(
                 onSuccess: product => Results.Ok(product),
