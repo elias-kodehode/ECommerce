@@ -4,14 +4,18 @@ using ECommerce.Api.Data;
 using ECommerce.Api.Domain;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Npgsql;
 
 namespace ECommerce.Api.Features.Products.CreateProduct;
 
 public sealed class CreateProductHandler(
 	IValidator<CreateProductCommand> validator,
-	AppDbContext db) : ICommandHandler<CreateProductCommand, Result<int>>
+	IMemoryCache cache,
+	AppDbContext db,
+	ILogger<CreateProductHandler> logger) : ICommandHandler<CreateProductCommand, Result<int>>
 {
+	const string CACHE_KEY = "product-id:";
 	public async Task<Result<int>> HandleAsync(CreateProductCommand command, CancellationToken ct)
 	{
 		var validationResult = await validator.ValidateAsync(command, ct);
@@ -52,6 +56,8 @@ public sealed class CreateProductHandler(
 				"A product with this SKU already exists."));
 		}
 
+		cache.Set(CACHE_KEY+product.Id, product);
+		logger.LogInformation("Created product with ID: {id}, and cache key {key}", product.Id, CACHE_KEY + product.Id);
 		return Result<int>.Success(product.Id);
 	}
 

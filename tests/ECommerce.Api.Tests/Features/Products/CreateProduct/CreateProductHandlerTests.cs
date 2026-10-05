@@ -3,6 +3,9 @@ using ECommerce.Api.Data;
 using ECommerce.Api.Domain;
 using ECommerce.Api.Features.Products.CreateProduct;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace ECommerce.Api.Tests.Features.Products.CreateProduct;
 
@@ -88,8 +91,12 @@ public sealed class CreateProductHandlerTests
         Assert.Equal(1, await db.Products.CountAsync(TestContext.Current.CancellationToken));
     }
 
-    private static CreateProductHandler CreateHandler(AppDbContext db) =>
-        new(new CreateProductCommandValidator(), db);
+    private static CreateProductHandler CreateHandler(AppDbContext db)
+    {
+        var cache = new MemoryCache(new MemoryCacheOptions());
+        ILogger<CreateProductHandler> logger = NullLogger<CreateProductHandler>.Instance;
+        return new(new CreateProductCommandValidator(),cache, db, logger);
+    }
 
     private static AppDbContext CreateDbContext()
     {

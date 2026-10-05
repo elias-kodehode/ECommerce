@@ -148,7 +148,7 @@ public sealed class CreateProductEndpointTests
                 databaseRoot));
         builder.Services.AddCqrs(typeof(CreateProductHandler).Assembly);
         builder.Services.AddValidatorsFromAssemblyContaining<CreateProductCommandValidator>();
-
+        builder.Services.AddMemoryCache();
         WebApplication app = builder.Build();
         app.MapEndpoints();
         await app.StartAsync(TestContext.Current.CancellationToken);
