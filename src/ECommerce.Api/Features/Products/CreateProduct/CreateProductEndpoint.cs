@@ -24,8 +24,15 @@ public sealed class CreateProductEndpoint : IEndpoint
 			return result.Match(
 				onSuccess: id => Results.Created(
 					$"/api/products/{id}",
-					new { id }),
+					new CreateProductResponse(id)),
 				onFailure: errors => errors.ToProblemDetails());
-		});
+		})
+		.WithName("CreateProduct")
+		.WithSummary("Create a product")
+		.WithDescription("Creates a new electronics product. Product SKUs must be unique.")
+		.WithTags("Products")
+		.Produces<CreateProductResponse>(StatusCodes.Status201Created)
+		.ProducesProblem(StatusCodes.Status400BadRequest)
+		.ProducesProblem(StatusCodes.Status409Conflict);
 	}
 }

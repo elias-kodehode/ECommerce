@@ -3,6 +3,7 @@ using ECommerce.Api.Common.Messaging;
 using ECommerce.Api.Data;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,6 +32,13 @@ app.MapDefaultEndpoints();
 if(app.Environment.IsDevelopment())
 {
 	app.MapOpenApi();
+	app.MapScalarApiReference(options =>
+	{
+		options
+			.WithTitle("ECommerce API")
+			.ShowOperationId()
+			.DisableAgent();
+	});
 }
 
 app.UseHttpsRedirection();

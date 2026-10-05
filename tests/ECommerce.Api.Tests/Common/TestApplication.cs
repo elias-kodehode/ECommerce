@@ -39,9 +39,11 @@ public sealed class TestApplication : IAsyncDisposable
 		builder.Services.AddCqrs(typeof(CreateProductHandler).Assembly);
 		builder.Services.AddValidatorsFromAssemblyContaining<CreateProductCommandValidator>();
 		builder.Services.AddMemoryCache();
+		builder.Services.AddOpenApi();
 
 		WebApplication app = builder.Build();
 		app.MapEndpoints();
+		app.MapOpenApi();
 		await app.StartAsync(ct);
 
 		return new TestApplication(app, app.GetTestClient());
