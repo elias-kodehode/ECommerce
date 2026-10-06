@@ -39,6 +39,6 @@ public class GetProductByIdHandler(
             return Result<ProductResponse>.Success(product);
         }
 
-        return Result<ProductResponse>.Failure(Error.NotFound("Product.NotFound", $"Product with ID {query.Id} was not found."));
+        return Result<ProductResponse>.Failure(ProductErrors.NotFound(query.Id));
     }
 }

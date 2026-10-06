@@ -1,4 +1,5 @@
 using ECommerce.Api.Domain;
+using ECommerce.Api.Features.Products.Common;
 using FluentValidation;
 
 namespace ECommerce.Api.Features.Products.CreateProduct;
@@ -9,40 +10,39 @@ public sealed class CreateProductCommandValidator : AbstractValidator<CreateProd
 	{
 		RuleFor(command => command.Name)
 			.NotEmpty()
-			.WithErrorCode("Products.Name.Required")
-			.WithMessage("A product name is required.")
+			.WithErrorCode(ProductErrors.NameRequired.Code)
+			.WithMessage(ProductErrors.NameRequired.Description)
 			.MaximumLength(Product.MaxNameLength)
-			.WithErrorCode("Products.Name.TooLong")
-			.WithMessage($"A product name cannot exceed {Product.MaxNameLength} characters.");
+			.WithErrorCode(ProductErrors.NameTooLong.Code)
+			.WithMessage(ProductErrors.NameTooLong.Description);
 
 		RuleFor(command => command.Sku)
 			.NotEmpty()
-			.WithErrorCode("Products.Sku.Required")
-			.WithMessage("A product SKU is required.")
+			.WithErrorCode(ProductErrors.SkuRequired.Code)
+			.WithMessage(ProductErrors.SkuRequired.Description)
 			.MaximumLength(Product.MaxSkuLength)
-			.WithErrorCode("Products.Sku.TooLong")
-			.WithMessage($"A product SKU cannot exceed {Product.MaxSkuLength} characters.");
+			.WithErrorCode(ProductErrors.SkuTooLong.Code)
+			.WithMessage(ProductErrors.SkuTooLong.Description);
 
 		RuleFor(command => command.Brand)
 			.NotEmpty()
-			.WithErrorCode("Products.Brand.Required")
-			.WithMessage("A product brand is required.")
+			.WithErrorCode(ProductErrors.BrandRequired.Code)
+			.WithMessage(ProductErrors.BrandRequired.Description)
 			.MaximumLength(Product.MaxBrandLength)
-			.WithErrorCode("Products.Brand.TooLong")
-			.WithMessage($"A product brand cannot exceed {Product.MaxBrandLength} characters.");
+			.WithErrorCode(ProductErrors.BrandTooLong.Code)
+			.WithMessage(ProductErrors.BrandTooLong.Description);
 
 		RuleFor(command => command.Price)
 			.GreaterThan(0)
-			.WithErrorCode("Products.Price.NotPositive")
-			.WithMessage("A product price must be greater than zero.")
+			.WithErrorCode(ProductErrors.PriceNotPositive.Code)
+			.WithMessage(ProductErrors.PriceNotPositive.Description)
 			.PrecisionScale(18, 2, ignoreTrailingZeros: true)
-			.WithErrorCode("Products.Price.InvalidPrecision")
-			.WithMessage(
-				"A product price can have at most 16 whole-number digits and two decimal places.");
+			.WithErrorCode(ProductErrors.PriceInvalidPrecision.Code)
+			.WithMessage(ProductErrors.PriceInvalidPrecision.Description);
 
 		RuleFor(command => command.StockQuantity)
 			.GreaterThanOrEqualTo(0)
-			.WithErrorCode("Products.StockQuantity.Negative")
-			.WithMessage("A product stock quantity cannot be negative.");
+			.WithErrorCode(ProductErrors.StockQuantityNegative.Code)
+			.WithMessage(ProductErrors.StockQuantityNegative.Description);
 	}
 }

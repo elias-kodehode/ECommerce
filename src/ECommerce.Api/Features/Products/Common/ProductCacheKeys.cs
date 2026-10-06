@@ -1,4 +1,6 @@
-﻿namespace ECommerce.Api.Features.Products.Common;
+﻿using ECommerce.Api.Domain;
+
+namespace ECommerce.Api.Features.Products.Common;
 
 public static class ProductCacheKeys
 {
@@ -8,4 +10,7 @@ public static class ProductCacheKeys
     /// <param name="id"></param>
     /// <returns>product-id:{<paramref name="id"/>}</returns>
     public static string ById(int id) => $"product-id:{id}";
+
+    /// <inheritdoc cref="ById(int)"/>
+    public static string ByProduct(Product product) => ById(product.Id);
 }
