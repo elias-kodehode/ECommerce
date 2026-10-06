@@ -12,9 +12,7 @@ builder.AddNpgsqlDbContext<AppDbContext>("ecommerce");
 builder.Services.AddCqrs(typeof(Program).Assembly);
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 builder.Services.AddOpenApi();
-builder.Services.AddMemoryCache(options =>
-{
-});
+builder.Services.AddMemoryCache();
 
 
 

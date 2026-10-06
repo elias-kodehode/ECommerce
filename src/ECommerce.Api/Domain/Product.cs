@@ -14,10 +14,7 @@ public class Product
     public int StockQuantity { get; private set; }
     public DateTime CreatedAtUtc { get; private set; }
 
-    private Product()
-    {
-    }
-
+    private Product() { }
     public static Product Create(
         string name,
         string sku,
