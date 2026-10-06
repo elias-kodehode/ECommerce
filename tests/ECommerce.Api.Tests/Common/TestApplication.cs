@@ -1,14 +1,14 @@
+using ECommerce.Api;
 using ECommerce.Api.Common.Endpoints;
-using ECommerce.Api.Common.Messaging;
+using ECommerce.Api.Common.OpenApi;
 using ECommerce.Api.Data;
-using ECommerce.Api.Features.Products.CreateProduct;
-using FluentValidation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace ECommerce.Api.Tests.Common;
@@ -27,7 +27,10 @@ public sealed class TestApplication : IAsyncDisposable
 
 	public static async Task<TestApplication> CreateAsync(CancellationToken ct = default)
 	{
-		WebApplicationBuilder builder = WebApplication.CreateBuilder();
+		WebApplicationBuilder builder = WebApplication.CreateBuilder(new WebApplicationOptions
+		{
+			EnvironmentName = Environments.Development
+		});
 		builder.WebHost.UseTestServer();
 		builder.Logging.ClearProviders();
 
@@ -36,14 +39,11 @@ public sealed class TestApplication : IAsyncDisposable
 
 		builder.Services.AddDbContext<AppDbContext>(options =>
 			options.UseInMemoryDatabase(databaseName, databaseRoot));
-		builder.Services.AddCqrs(typeof(CreateProductHandler).Assembly);
-		builder.Services.AddValidatorsFromAssemblyContaining<CreateProductCommandValidator>();
-		builder.Services.AddMemoryCache();
-		builder.Services.AddOpenApi();
+		builder.Services.AddApiServices();
 
 		WebApplication app = builder.Build();
 		app.MapEndpoints();
-		app.MapOpenApi();
+		app.MapApiDocumentation();
 		await app.StartAsync(ct);
 
 		return new TestApplication(app, app.GetTestClient());
