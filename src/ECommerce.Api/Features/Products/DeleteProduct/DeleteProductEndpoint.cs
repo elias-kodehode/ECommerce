@@ -1,6 +1,5 @@
 ﻿using ECommerce.Api.Common.Endpoints;
 using ECommerce.Api.Common.Messaging;
-using ECommerce.Api.Data;
 
 namespace ECommerce.Api.Features.Products.DeleteProduct;
 
@@ -17,9 +16,15 @@ public class DeleteProductEndpoint : IEndpoint
             var result = await dispatcher.SendAsync(command, ct);
 
             return result.Match(
-                onSuccess: () => Results.Ok(),
+                onSuccess: () => Results.NoContent(),
                 onFailure: errors => errors.ToProblemDetails()
             );
-        });
+        })
+        .WithName("DeleteProduct")
+        .WithSummary("Delete a product")
+        .WithDescription("Delete a product by Id")
+        .WithTags("Products")
+        .Produces(StatusCodes.Status204NoContent)
+        .ProducesProblem(StatusCodes.Status404NotFound);
     }
 }
