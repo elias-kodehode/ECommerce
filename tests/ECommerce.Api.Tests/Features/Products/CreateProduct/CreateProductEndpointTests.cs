@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using ECommerce.Api.Domain;
+using ECommerce.Api.Features.Products.Common;
 using ECommerce.Api.Features.Products.CreateProduct;
 using ECommerce.Api.Tests.Common;
 using Microsoft.EntityFrameworkCore;

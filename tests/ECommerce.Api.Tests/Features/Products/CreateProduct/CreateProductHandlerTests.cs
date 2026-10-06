@@ -1,6 +1,7 @@
 using ECommerce.Api.Common.Results;
 using ECommerce.Api.Data;
 using ECommerce.Api.Domain;
+using ECommerce.Api.Features.Products.Common;
 using ECommerce.Api.Features.Products.CreateProduct;
 using ECommerce.Api.Tests.Common;
 using Microsoft.EntityFrameworkCore;
