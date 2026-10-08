@@ -8,7 +8,7 @@ namespace ECommerce.Api.Features.Users.RegisterUser;
 public class RegisterUserCommandValidator : AbstractValidator<RegisterUserCommand>
 {
 
-    public RegisterUserCommandValidator(IOptions<IdentityOptions> options)
+    public RegisterUserCommandValidator()
     {
 
         RuleFor(x => x.Email)

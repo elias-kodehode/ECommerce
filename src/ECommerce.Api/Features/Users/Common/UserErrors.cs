@@ -2,7 +2,7 @@
 
 namespace ECommerce.Api.Features.Users.Common;
 
-public class UserErrors
+public static class UserErrors
 {
     public static Error NotFound(int id) => Error.NotFound(
         "User.NotFound",
@@ -19,10 +19,6 @@ public class UserErrors
     public static readonly Error PasswordRequired = Error.Validation(
         "User.Password.Required",
         "A password is required.");
-
-    public static Error PasswordTooShort(int minLength) => Error.Validation(
-        "User.Password.TooShort",
-        $"Password must be at least {minLength} characters long.");
 
     public static readonly Error ConfirmPasswordRequired = Error.Validation(
         "User.ConfirmPassword.Required",
