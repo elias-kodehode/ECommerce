@@ -35,7 +35,7 @@ public class LoginUserHandler(
         {
             return Result.Failure(UserErrors.NotAllowed);
         }
-        var result = await signInManager.CheckPasswordSignInAsync(user, command.Password, false);
+        var result = await signInManager.CheckPasswordSignInAsync(user, command.Password,false);
 
 
 
@@ -44,7 +44,10 @@ public class LoginUserHandler(
             return Result.Failure(Error.Unauthorized("something wrong", "something wrong"));
         }
 
-        await signInManager.SignInAsync(user, true, CookieAuthenticationDefaults.AuthenticationScheme);
+        await signInManager.SignInAsync(
+            user: user,
+            isPersistent: command.RememberMe, 
+            CookieAuthenticationDefaults.AuthenticationScheme);
         return Result.Success();
     }
 }

@@ -11,7 +11,8 @@ public class LoginUserEndpoint : IEndpoint
             
             var result = await dispatcher.SendAsync(new LoginUserCommand(
                 Email: request.Email,
-                Password: request.Password
+                Password: request.Password,
+                RememberMe: request.RememberMe
             ));
 
             return result.Match(
