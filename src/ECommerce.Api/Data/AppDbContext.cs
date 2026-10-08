@@ -1,14 +1,16 @@
 using ECommerce.Api.Domain;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace ECommerce.Api.Data;
 
-public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
+public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbContext<AppUser>(options)
 {
 	public DbSet<Product> Products { get; set; }
 
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{
+		base.OnModelCreating(modelBuilder);
 		var product = modelBuilder.Entity<Product>();
 
 		product.Property(x => x.Name)
@@ -29,6 +31,5 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 		product.HasIndex(x => x.Sku)
 			.IsUnique();
 
-		base.OnModelCreating(modelBuilder);
 	}
 }

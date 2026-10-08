@@ -14,6 +14,8 @@ var app = builder.Build();
 await app.MigrateDatabaseAsync();
 
 app.UseHttpsRedirection();
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapEndpoints();
 app.MapDefaultEndpoints();
 app.MapApiDocumentation();
