@@ -30,6 +30,21 @@ public sealed class UpdateProductCommandValidatorTests
     };
 
     [Fact]
+    public void Validate_WithNoFieldsSupplied_ReturnsNoFieldsToUpdateError()
+    {
+        UpdateProductCommand command = new(
+            Name: null, Brand: null, Sku: null, Price: null, StockQuantity: null)
+        { Id = 1 };
+
+        var result = _validator.Validate(command);
+
+        Assert.False(result.IsValid);
+        var error = Assert.Single(result.Errors);
+        Assert.Equal(ProductErrors.NoFieldsToUpdate.Code, error.ErrorCode);
+        Assert.Equal(ProductErrors.NoFieldsToUpdate.Description, error.ErrorMessage);
+    }
+
+    [Fact]
     public void Validate_WithOnlyZeroStockSupplied_AllowsOmittedFields()
     {
         UpdateProductCommand command = new(

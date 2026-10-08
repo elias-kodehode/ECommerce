@@ -26,7 +26,7 @@ public sealed class UpdateProductEndpointTests
             request["name"] = null;
             request["sku"] = null;
             request["brand"] = null;
-            request["quantityStock"] = null;
+            request["stockQuantity"] = null;
         }
 
         using HttpResponseMessage response = await application.Client.PatchAsJsonAsync(
@@ -50,7 +50,7 @@ public sealed class UpdateProductEndpointTests
 
         using HttpResponseMessage response = await application.Client.PatchAsJsonAsync(
             $"/api/products/{product.Id}",
-            new { name = "  Updated Mouse  ", sku = "  mouse-002  ", brand = "  New Brand  ", price = 39.99m, quantityStock = 0 },
+            new { name = "  Updated Mouse  ", sku = "  mouse-002  ", brand = "  New Brand  ", price = 39.99m, stockQuantity = 0 },
             TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -75,6 +75,27 @@ public sealed class UpdateProductEndpointTests
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         await AssertErrorAsync(response, ProductErrors.NameTooLong);
+        await AssertPersistedAsync(application, original);
+        await application.ExecuteDbContextAsync(async db =>
+        {
+            Product persisted = await db.Products.SingleAsync(TestContext.Current.CancellationToken);
+            Assert.Equal(updatedAtUtc, persisted.UpdatedAtUtc);
+        });
+    }
+
+    [Fact]
+    public async Task Patch_WithNoFieldsSupplied_ReturnsValidationProblemWithoutChangingProduct()
+    {
+        await using TestApplication application = await TestApplication.CreateAsync(TestContext.Current.CancellationToken);
+        Product product = await SeedProductAsync(application);
+        ProductResponse original = ToResponse(product);
+        DateTime updatedAtUtc = product.UpdatedAtUtc;
+
+        using HttpResponseMessage response = await application.Client.PatchAsJsonAsync(
+            $"/api/products/{product.Id}", new { }, TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        await AssertErrorAsync(response, ProductErrors.NoFieldsToUpdate);
         await AssertPersistedAsync(application, original);
         await application.ExecuteDbContextAsync(async db =>
         {
