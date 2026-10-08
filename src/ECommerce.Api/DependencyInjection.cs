@@ -24,6 +24,7 @@ public static class DependencyInjection
             x.Password.RequireUppercase = false;
             x.Password.RequireDigit = false;
             x.User.RequireUniqueEmail = true;
+            x.SignIn.RequireConfirmedEmail = false;
         })
             .AddDefaultTokenProviders()
             .AddEntityFrameworkStores<AppDbContext>();

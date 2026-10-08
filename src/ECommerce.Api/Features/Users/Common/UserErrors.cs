@@ -27,4 +27,12 @@ public static class UserErrors
     public static readonly Error PasswordsDoNotMatch = Error.Validation(
         "User.ConfirmPassword.Mismatch",
         "Passwords do not match.");
+
+    public static readonly Error NotAllowed = Error.Forbidden(
+        "User.Email.NotConfirmed",
+        "Please confirm your email before logging in.");
+
+    public static readonly Error LockedOut = Error.Forbidden(
+        "User.Login.LockedOut",
+        "Account locked out. Try again later.");
 }
