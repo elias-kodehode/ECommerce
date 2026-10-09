@@ -1,5 +1,6 @@
 using ECommerce.Api.Common.Messaging;
 using ECommerce.Api.Data;
+using ECommerce.Api.Domain;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
@@ -10,12 +11,11 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddApiServices(this IServiceCollection services)
     {
-
-        services
-            .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-            .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme);
-
         services.AddAuthorizationBuilder();
+
+        services.AddHttpContextAccessor();
+        services.AddScoped<ICurrentUser,CurrentUser>();
+
 
         services.AddIdentity<AppUser, IdentityRole>(x =>
         {
@@ -28,6 +28,22 @@ public static class DependencyInjection
         })
             .AddDefaultTokenProviders()
             .AddEntityFrameworkStores<AppDbContext>();
+
+        services.ConfigureApplicationCookie(options =>
+        {
+            options.Events.OnRedirectToLogin = context =>
+            {
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                return Task.CompletedTask;
+            };
+            options.Events.OnRedirectToAccessDenied = context =>
+            {
+                context.Response.StatusCode =
+                    StatusCodes.Status403Forbidden;
+
+                return Task.CompletedTask;
+            };
+        });
 
 
         services.AddCqrs(typeof(DependencyInjection).Assembly);
