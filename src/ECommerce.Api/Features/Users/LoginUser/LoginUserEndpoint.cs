@@ -7,13 +7,13 @@ public class LoginUserEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapPost("/users/login", async (LoginUserRequest request,ICommandDispatcher dispatcher) => {
+        app.MapPost("/users/login", async (LoginUserRequest request,ICommandDispatcher dispatcher, CancellationToken ct) => {
             
             var result = await dispatcher.SendAsync(new LoginUserCommand(
                 Email: request.Email,
                 Password: request.Password,
                 RememberMe: request.RememberMe
-            ));
+            ), ct);
 
             return result.Match(
                 onSuccess: () => Results.NoContent(),
