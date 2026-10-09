@@ -26,22 +26,15 @@ public class Product
         this.StockQuantity = stockQuantity;
         this.UpdatedAtUtc = DateTime.UtcNow;
     }
-    public static Product Create(
-        string name,
-        string sku,
-        string brand,
-        decimal price,
-        int stockQuantity)
+    public static Product Create(string name, string sku, string brand, decimal price, int stockQuantity)  => new()
     {
-        return new Product
-        {
-            Name = name.Trim(),
-            Sku = sku.Trim().ToUpperInvariant(),
-            Brand = brand.Trim(),
-            Price = price,
-            StockQuantity = stockQuantity,
-            CreatedAtUtc = DateTime.UtcNow,
-            UpdatedAtUtc = DateTime.UtcNow
-        };
-    }
+        Name = name.Trim(),
+        Sku = sku.Trim().ToUpperInvariant(),
+        Brand = brand.Trim(),
+        Price = price,
+        StockQuantity = stockQuantity,
+        CreatedAtUtc = DateTime.UtcNow,
+        UpdatedAtUtc = DateTime.UtcNow
+    };
+    
 }
