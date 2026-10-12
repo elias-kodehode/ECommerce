@@ -14,14 +14,10 @@ var app = builder.Build();
 {
 	await app.MigrateDatabaseAsync();
 	app.UseHttpsRedirection();
-	app.UseDefaultFiles();
-	app.UseStaticFiles();
 	app.UseAuthentication();
 	app.UseAuthorization();
 	app.MapEndpoints();
 	app.MapDefaultEndpoints();
 	app.MapApiDocumentation();
-	app.MapFallback("/api/{**path}", () => Results.NotFound());
-	app.MapFallbackToFile("index.html");
 }
 app.Run();
